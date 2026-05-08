@@ -1,0 +1,29 @@
+{
+  "name": "webexter",
+  "version": "1.0.0",
+  "description": "A scaffolding CLI for quickly building browser extensions",
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "webexter": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc && cp -r src/templates dist/templates",
+    "dev": "tsx src/cli.ts",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": ["browser-extension", "scaffold", "chrome-extension", "manifest-v3"],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.33.4",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/prompts": "^2.4.9",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}

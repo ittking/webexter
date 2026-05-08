@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install *)",
+      "Bash(npx tsc *)",
+      "Bash(pnpm build *)",
+      "Bash(mkdir -p /tmp/webexter-test)",
+      "Read(//tmp/**)",
+      "Bash(node /Volumes/Extra/Projects/workspace/webexter/dist/cli.js create test-extension)",
+      "Bash(rm -rf /tmp/webexter-test)",
+      "Read(//private/tmp/webexter-test/**)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}
