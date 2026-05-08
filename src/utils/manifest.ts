@@ -1,6 +1,7 @@
 export interface ManifestOptions {
   name: string
   modules: string[]
+  language: 'ts' | 'js'
 }
 
 interface ManifestV3 {
@@ -18,7 +19,8 @@ interface ManifestV3 {
 }
 
 export function generateManifest(options: ManifestOptions): string {
-  const { name, modules } = options
+  const { name, modules, language } = options
+  const ext = `.${language}`
 
   const manifest: Record<string, unknown> = {
     manifest_version: 3,
@@ -35,7 +37,7 @@ export function generateManifest(options: ManifestOptions): string {
 
   if (modules.includes('background')) {
     manifest.background = {
-      service_worker: 'src/background/index.ts',
+      service_worker: `src/background/index${ext}`,
       type: 'module',
     }
   }
@@ -44,7 +46,7 @@ export function generateManifest(options: ManifestOptions): string {
     manifest.content_scripts = [
       {
         matches: ['<all_urls>'],
-        js: ['src/content/index.ts'],
+        js: [`src/content/index${ext}`],
       },
     ]
   }

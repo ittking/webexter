@@ -1,4 +1,6 @@
-chrome.devtools.panels.create(
+import browser from 'webextension-polyfill'
+
+browser.devtools.panels.create(
   'My Extension',
   '',
   'src/devtools/index.html',

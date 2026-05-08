@@ -67,29 +67,33 @@ function generatePackageJson(projectName: string, framework: Framework, language
       build: 'vite build',
       preview: 'vite preview',
     },
+    dependencies: {
+      'webextension-polyfill': '^0.12.0',
+    },
     devDependencies: {
       vite: '^6.3.0',
     },
   }
 
   if (framework === 'vue') {
-    ;(pkg.dependencies as Record<string, string>) = { vue: '^3.5.0' }
+    ;(pkg.dependencies as Record<string, string>)['vue'] = '^3.5.0'
     ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-vue'] = '^5.2.0'
     if (language === 'ts') {
       ;(pkg.scripts as Record<string, string>).build = 'vue-tsc --noEmit && vite build'
       ;(pkg.devDependencies as Record<string, string>)['typescript'] = '^5.8.0'
       ;(pkg.devDependencies as Record<string, string>)['vue-tsc'] = '^2.2.0'
-      ;(pkg.devDependencies as Record<string, string>)['@types/chrome'] = '^0.0.313'
+      ;(pkg.devDependencies as Record<string, string>)['@types/webextension-polyfill'] = '^0.12.0'
     }
   } else {
-    ;(pkg.dependencies as Record<string, string>) = { react: '^19.0.0', 'react-dom': '^19.0.0' }
+    ;(pkg.dependencies as Record<string, string>)['react'] = '^19.0.0'
+    ;(pkg.dependencies as Record<string, string>)['react-dom'] = '^19.0.0'
     ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-react'] = '^4.4.0'
     if (language === 'ts') {
       ;(pkg.scripts as Record<string, string>).build = 'tsc --noEmit && vite build'
       ;(pkg.devDependencies as Record<string, string>)['typescript'] = '^5.8.0'
       ;(pkg.devDependencies as Record<string, string>)['@types/react'] = '^19.0.0'
       ;(pkg.devDependencies as Record<string, string>)['@types/react-dom'] = '^19.0.0'
-      ;(pkg.devDependencies as Record<string, string>)['@types/chrome'] = '^0.0.313'
+      ;(pkg.devDependencies as Record<string, string>)['@types/webextension-polyfill'] = '^0.12.0'
     }
   }
 
@@ -120,7 +124,7 @@ export async function create(projectName: string): Promise<void> {
   // Generate config files
   writeFile(path.join(projectDir, 'package.json'), generatePackageJson(projectName, framework, language))
   writeFile(path.join(projectDir, 'vite.config.ts'), generateViteConfig(framework, language, modules))
-  writeFile(path.join(projectDir, 'manifest.json'), generateManifest({ name: projectName, modules }))
+  writeFile(path.join(projectDir, 'manifest.json'), generateManifest({ name: projectName, modules, language }))
 
   // Copy tsconfig/jsconfig from template
   const templateDir = getTemplateDir()
