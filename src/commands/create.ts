@@ -91,6 +91,9 @@ function generatePackageJson(projectName: string, framework: Framework, language
       build: 'vite build',
       'build:chrome': 'vite build --mode chrome',
       'build:firefox': 'vite build --mode firefox',
+      pack: 'vite build',
+      'pack:chrome': 'vite build --mode chrome',
+      'pack:firefox': 'vite build --mode firefox',
       preview: 'vite preview',
     },
     dependencies: {
@@ -199,6 +202,8 @@ export async function create(projectName: string): Promise<void> {
   console.log('Next steps:')
   console.log(`  cd ${projectName}`)
   console.log('  pnpm install')
-  console.log('  pnpm dev')
+  console.log('  pnpm dev        # development')
+  console.log('  pnpm pack       # build + zip')
+  console.log('  pnpm pack:firefox # build + zip for Firefox')
   console.log()
 }
