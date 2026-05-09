@@ -151,6 +151,7 @@ ${inputLines.join(',\n')}
           }
           return 'assets/[name].[ext]'
         },
+        banner: () => \`import browser from 'webextension-polyfill';globalThis.browser=browser;\`,
       },
     },
     outDir: outBase,
