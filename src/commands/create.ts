@@ -1,7 +1,7 @@
 import path from 'node:path'
 import fs from 'node:fs'
 import { copyDir, ensureDir, writeFile, dirExists, getTemplateDir } from '../utils/files.js'
-import { promptFramework, promptLanguage, promptModules } from '../utils/prompts.js'
+import { promptFramework, promptLanguage, promptModules, promptTailwindCSS } from '../utils/prompts.js'
 import { generateManifest } from '../utils/manifest.js'
 
 type Framework = 'vue' | 'react'
@@ -14,15 +14,18 @@ const PLUGINS: Record<Framework, { import: string; package: string }> = {
 
 function generateViteConfig(
   framework: Framework,
-  projectName: string
+  projectName: string,
+  useTailwindcss: boolean
 ): string {
   const plugin = PLUGINS[framework]
+  const tailwindImport = useTailwindcss ? `\nimport tailwindcss from '@tailwindcss/vite'` : ''
+  const tailwindPlugin = useTailwindcss ? '\n      tailwindcss(),' : ''
 
   return `import { defineConfig, loadEnv } from 'vite'
 import ${plugin.import} from '${plugin.package}'
 import { crx } from '@crxjs/vite-plugin'
 import zipPack from 'vite-plugin-zip-pack'
-import { resolve } from 'path'
+import { resolve } from 'path'${tailwindImport}
 import baseManifest from './manifest.json'
 
 export default defineConfig(({ mode }) => {
@@ -67,7 +70,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
-      ${plugin.import}(),
+      ${plugin.import}(),${tailwindPlugin}
       crx({ manifest }),
       zipPack({
         inDir: 'dist',
@@ -92,7 +95,7 @@ export default defineConfig(({ mode }) => {
 `
 }
 
-function generatePackageJson(projectName: string, framework: Framework, language: Language): string {
+function generatePackageJson(projectName: string, framework: Framework, language: Language, useTailwindcss: boolean): string {
   const pkg: Record<string, unknown> = {
     name: projectName,
     version: '0.0.1',
@@ -139,6 +142,10 @@ function generatePackageJson(projectName: string, framework: Framework, language
     }
   }
 
+  if (useTailwindcss) {
+    ;(pkg.devDependencies as Record<string, string>)['@tailwindcss/vite'] = '^4.3.0'
+  }
+
   return JSON.stringify(pkg, null, 2)
 }
 
@@ -155,6 +162,7 @@ export async function create(projectName: string): Promise<void> {
   const framework = await promptFramework()
   const language = await promptLanguage()
   const modules = await promptModules()
+  const useTailwindcss = await promptTailwindCSS()
 
   const templateKey = `${framework}-${language}`
   console.log(`\nScaffolding with ${templateKey}, modules: ${modules.join(', ')}\n`)
@@ -164,8 +172,8 @@ export async function create(projectName: string): Promise<void> {
   ensureDir(path.join(projectDir, 'src'))
 
   // Generate config files
-  writeFile(path.join(projectDir, 'package.json'), generatePackageJson(projectName, framework, language))
-  writeFile(path.join(projectDir, 'vite.config.ts'), generateViteConfig(framework, projectName))
+  writeFile(path.join(projectDir, 'package.json'), generatePackageJson(projectName, framework, language, useTailwindcss))
+  writeFile(path.join(projectDir, 'vite.config.ts'), generateViteConfig(framework, projectName, useTailwindcss))
   writeFile(path.join(projectDir, 'manifest.json'), generateManifest({ name: projectName, modules, language }))
 
   // Generate env files
@@ -179,6 +187,11 @@ export async function create(projectName: string): Promise<void> {
 
   // Generate .gitignore
   writeFile(path.join(projectDir, '.gitignore'), 'dist\nrelease\nnode_modules\n')
+
+  // Generate tailwind CSS entry if enabled
+  if (useTailwindcss) {
+    writeFile(path.join(projectDir, 'src', 'index.css'), '@import "tailwindcss";\n')
+  }
 
   // Copy tsconfig/jsconfig from template
   const templateDir = getTemplateDir()
