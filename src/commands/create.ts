@@ -46,16 +46,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
       ${plugin.import}(),
       crx({ manifest }),
-      {
-        name: 'inject-browser-polyfill',
-        enforce: 'pre',
-        transform(code, id) {
-          if (!id.startsWith('\\0') && /\\.(ts|js|tsx|jsx)$/.test(id) && !id.includes('node_modules')) {
-            return "import browser from 'webextension-polyfill';\\n" + code
-          }
-          return code
-        },
-      },
       zipPack({
         inDir: 'dist',
         outDir: 'release',

@@ -1,3 +1,5 @@
+import browser from 'webextension-polyfill'
+
 browser.devtools.panels.create(
   'My Extension',
   '',
