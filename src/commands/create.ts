@@ -21,6 +21,7 @@ function generateViteConfig(
   return `import { defineConfig, loadEnv } from 'vite'
 import ${plugin.import} from '${plugin.package}'
 import { crx } from '@crxjs/vite-plugin'
+import zipPack from 'vite-plugin-zip-pack'
 import baseManifest from './manifest.json'
 
 export default defineConfig(({ mode }) => {
@@ -36,6 +37,11 @@ export default defineConfig(({ mode }) => {
     }
   }
 
+  const platform = mode === 'production' ? '' : mode
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const extName = String(baseManifest.name).replace(/[^a-zA-Z0-9_-]/g, '_')
+  const zipFileName = platform ? extName + '_' + platform + '_' + baseManifest.version + '_' + date + '.zip' : extName + '_' + baseManifest.version + '_' + date + '.zip'
+
   return {
     plugins: [
       ${plugin.import}(),
@@ -50,6 +56,11 @@ export default defineConfig(({ mode }) => {
           return code
         },
       },
+      zipPack({
+        inDir: 'dist',
+        outDir: 'release',
+        outFileName: zipFileName,
+      }),
     ],
     server: {
       port: 5173,
@@ -88,6 +99,7 @@ function generatePackageJson(projectName: string, framework: Framework, language
     devDependencies: {
       vite: '^8.0.0',
       '@crxjs/vite-plugin': '^2.4.0',
+      'vite-plugin-zip-pack': '^1.2.4',
     },
   }
 
