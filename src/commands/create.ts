@@ -22,6 +22,7 @@ function generateViteConfig(
 import ${plugin.import} from '${plugin.package}'
 import { crx } from '@crxjs/vite-plugin'
 import zipPack from 'vite-plugin-zip-pack'
+import { resolve } from 'path'
 import baseManifest from './manifest.json'
 
 export default defineConfig(({ mode }) => {
@@ -60,6 +61,11 @@ export default defineConfig(({ mode }) => {
   const zipFileName = platform ? extName + '_' + platform + '_' + baseManifest.version + '_' + date + '.zip' : extName + '_' + baseManifest.version + '_' + date + '.zip'
 
   return {
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, 'src'),
+      },
+    },
     plugins: [
       ${plugin.import}(),
       crx({ manifest }),
@@ -170,6 +176,9 @@ export async function create(projectName: string): Promise<void> {
   for (const [file, content] of Object.entries(envFiles)) {
     writeFile(path.join(projectDir, file), content)
   }
+
+  // Generate .gitignore
+  writeFile(path.join(projectDir, '.gitignore'), 'dist\nrelease\nnode_modules\n')
 
   // Copy tsconfig/jsconfig from template
   const templateDir = getTemplateDir()

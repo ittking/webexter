@@ -52,6 +52,17 @@ export async function promptLanguage(): Promise<'ts' | 'js'> {
   return response.language
 }
 
+export async function promptTailwindCSS(): Promise<boolean> {
+  const response = await prompts({
+    type: 'confirm',
+    name: 'tailwindcss',
+    message: 'Do you want to include Tailwind CSS?',
+    initial: false,
+  })
+
+  return response.tailwindcss ?? false
+}
+
 export async function promptModules(): Promise<string[]> {
   const response = await prompts({
     type: 'multiselect',
