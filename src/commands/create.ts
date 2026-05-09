@@ -140,13 +140,10 @@ export async function create(projectName: string): Promise<void> {
   writeFile(path.join(projectDir, 'vite.config.ts'), generateViteConfig(framework, projectName))
   writeFile(path.join(projectDir, 'manifest.json'), generateManifest({ name: projectName, modules, language }))
 
-  // Generate env files for different platforms
+  // Generate env files
   const envFiles: Record<string, string> = {
     '.env': '# Default environment variables\n',
-    '.env.chrome': '# Chrome\n',
     '.env.firefox': `# Firefox\nVITE_FIREFOX_ID=${projectName}@example.com\n`,
-    '.env.qq': '# QQ Browser\n',
-    '.env.quark': '# Quark\n',
   }
   for (const [file, content] of Object.entries(envFiles)) {
     writeFile(path.join(projectDir, file), content)
