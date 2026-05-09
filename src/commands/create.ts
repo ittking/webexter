@@ -12,59 +12,58 @@ const PLUGINS: Record<Framework, { import: string; package: string }> = {
   react: { import: 'react', package: '@vitejs/plugin-react' },
 }
 
-function getExt(framework: Framework, language: Language): string {
-  return `.${language}`
-}
-
 function generateViteConfig(
   framework: Framework,
-  language: Language,
-  modules: string[]
+  projectName: string
 ): string {
   const plugin = PLUGINS[framework]
-  const ext = getExt(framework, language)
 
-  const inputLines: string[] = []
-  for (const mod of modules) {
-    if (['popup', 'options', 'sidepanel', 'devtools', 'newtab'].includes(mod)) {
-      inputLines.push(`    ${mod}: 'src/${mod}/index.html'`)
-    } else {
-      inputLines.push(`    ${mod}: 'src/${mod}/index${ext}'`)
+  return `import { defineConfig, loadEnv } from 'vite'
+import ${plugin.import} from '${plugin.package}'
+import { crx } from '@crxjs/vite-plugin'
+import baseManifest from './manifest.json'
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  const manifest = { ...baseManifest }
+
+  if (mode === 'firefox') {
+    ;(manifest as Record<string, any>).browser_specific_settings = {
+      gecko: {
+        id: env.VITE_FIREFOX_ID || '${projectName}@example.com',
+      },
     }
   }
 
-  return `import { defineConfig } from 'vite'
-import ${plugin.import} from '${plugin.package}'
-import { crx } from '@crxjs/vite-plugin'
-import manifest from './manifest.json'
-
-export default defineConfig({
-  plugins: [
-    ${plugin.import}(),
-    crx({ manifest }),
-    {
-      name: 'inject-browser-polyfill',
-      enforce: 'pre',
-      transform(code, id) {
-        if (/\\.(ts|js|tsx|jsx)$/.test(id) && !id.includes('node_modules')) {
-          return "import browser from 'webextension-polyfill';\\n" + code
-        }
-        return code
+  return {
+    plugins: [
+      ${plugin.import}(),
+      crx({ manifest }),
+      {
+        name: 'inject-browser-polyfill',
+        enforce: 'pre',
+        transform(code, id) {
+          if (/\\.(ts|js|tsx|jsx)$/.test(id) && !id.includes('node_modules')) {
+            return "import browser from 'webextension-polyfill';\\n" + code
+          }
+          return code
+        },
       },
-    },
-  ],
-  server: {
-    port: 5173,
-    hmr: {
-      host: 'localhost',
+    ],
+    server: {
       port: 5173,
+      hmr: {
+        host: 'localhost',
+        port: 5173,
+      },
+      cors: true,
     },
-    cors: true,
-  },
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-  },
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+    },
+  }
 })
 `
 }
@@ -76,7 +75,11 @@ function generatePackageJson(projectName: string, framework: Framework, language
     type: 'module',
     scripts: {
       dev: 'vite',
+      'dev:chrome': 'vite --mode chrome',
+      'dev:firefox': 'vite --mode firefox',
       build: 'vite build',
+      'build:chrome': 'vite build --mode chrome',
+      'build:firefox': 'vite build --mode firefox',
       preview: 'vite preview',
     },
     dependencies: {
@@ -134,8 +137,20 @@ export async function create(projectName: string): Promise<void> {
 
   // Generate config files
   writeFile(path.join(projectDir, 'package.json'), generatePackageJson(projectName, framework, language))
-  writeFile(path.join(projectDir, 'vite.config.ts'), generateViteConfig(framework, language, modules))
+  writeFile(path.join(projectDir, 'vite.config.ts'), generateViteConfig(framework, projectName))
   writeFile(path.join(projectDir, 'manifest.json'), generateManifest({ name: projectName, modules, language }))
+
+  // Generate env files for different platforms
+  const envFiles: Record<string, string> = {
+    '.env': '# Default environment variables\n',
+    '.env.chrome': '# Chrome\n',
+    '.env.firefox': `# Firefox\nVITE_FIREFOX_ID=${projectName}@example.com\n`,
+    '.env.qq': '# QQ Browser\n',
+    '.env.quark': '# Quark\n',
+  }
+  for (const [file, content] of Object.entries(envFiles)) {
+    writeFile(path.join(projectDir, file), content)
+  }
 
   // Copy tsconfig/jsconfig from template
   const templateDir = getTemplateDir()
@@ -153,11 +168,14 @@ export async function create(projectName: string): Promise<void> {
     fs.copyFileSync(nodeConfigSrc, path.join(projectDir, 'tsconfig.node.json'))
   }
 
-  // Copy env.d.ts if exists (Vue TS)
+  // Copy env.d.ts if exists (Vue TS), otherwise generate for TS projects
   const envDtsSrc = path.join(templateSrc, 'src', 'env.d.ts')
   if (fs.existsSync(envDtsSrc)) {
     ensureDir(path.join(projectDir, 'src'))
     fs.copyFileSync(envDtsSrc, path.join(projectDir, 'src', 'env.d.ts'))
+  } else if (language === 'ts') {
+    ensureDir(path.join(projectDir, 'src'))
+    writeFile(path.join(projectDir, 'src', 'env.d.ts'), '/// <reference types="vite/client" />\n')
   }
 
   // Copy selected module templates
