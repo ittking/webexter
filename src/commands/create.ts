@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
         name: 'inject-browser-polyfill',
         enforce: 'pre',
         transform(code, id) {
-          if (/\\.(ts|js|tsx|jsx)$/.test(id) && !id.includes('node_modules')) {
+          if (!id.startsWith('\\0') && /\\.(ts|js|tsx|jsx)$/.test(id) && !id.includes('node_modules')) {
             return "import browser from 'webextension-polyfill';\\n" + code
           }
           return code

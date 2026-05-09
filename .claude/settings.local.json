@@ -37,7 +37,8 @@
       "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/vue-js/src/newtab)",
       "Bash(npm view *)",
       "Bash(kill 94895 *)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npx vite *)"
     ]
   }
 }
