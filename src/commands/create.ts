@@ -53,6 +53,13 @@ export default defineConfig({
       },
     },
   ],
+  server: {
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      clientPort: 5173,
+    },
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -75,14 +82,14 @@ function generatePackageJson(projectName: string, framework: Framework, language
       'webextension-polyfill': '^0.12.0',
     },
     devDependencies: {
-      vite: '^6.3.0',
+      vite: '^8.0.0',
       '@crxjs/vite-plugin': '^2.4.0',
     },
   }
 
   if (framework === 'vue') {
     ;(pkg.dependencies as Record<string, string>)['vue'] = '^3.5.0'
-    ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-vue'] = '^5.2.0'
+    ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-vue'] = '^6.0.0'
     if (language === 'ts') {
       ;(pkg.devDependencies as Record<string, string>)['typescript'] = '^5.8.0'
       ;(pkg.devDependencies as Record<string, string>)['vue-tsc'] = '^2.2.0'
@@ -91,7 +98,7 @@ function generatePackageJson(projectName: string, framework: Framework, language
   } else {
     ;(pkg.dependencies as Record<string, string>)['react'] = '^19.0.0'
     ;(pkg.dependencies as Record<string, string>)['react-dom'] = '^19.0.0'
-    ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-react'] = '^4.4.0'
+    ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-react'] = '^5.2.0'
     if (language === 'ts') {
       ;(pkg.devDependencies as Record<string, string>)['typescript'] = '^5.8.0'
       ;(pkg.devDependencies as Record<string, string>)['@types/react'] = '^19.0.0'

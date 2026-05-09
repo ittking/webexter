@@ -35,7 +35,8 @@
       "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/vue-ts/src/newtab)",
       "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/react-js/src/newtab)",
       "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/vue-js/src/newtab)",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(kill 94895 *)"
     ]
   }
 }
