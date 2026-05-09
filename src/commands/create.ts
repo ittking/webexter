@@ -72,6 +72,10 @@ export default defineConfig({
         if (fs.existsSync('public')) {
           copyDir('public', outDir)
         }
+        if (isDev) {
+          const reloadScript = "let lastCheck = Date.now();async function checkUpdate(){try{const res=await fetch(location.href+'?'+Date.now());const text=await res.text();const check=text.length;if(window.__lastCheck&&window.__lastCheck!==check)location.reload();window.__lastCheck=check}catch(e){}}setInterval(checkUpdate,2000);";
+          fs.writeFileSync(resolve(outDir, 'reload.js'), reloadScript)
+        }
         let hasSrcDir = false
         for (const mod of pageModules) {
           const srcHtml = resolve(outDir, 'src', mod, 'index.html')
@@ -83,24 +87,7 @@ export default defineConfig({
             }
             let content = fs.readFileSync(srcHtml, 'utf8')
             if (isDev) {
-              content = content.replace(
-                '</head>',
-                \`<script>
-                  let lastModified = \${Date.now()};
-                  async function checkUpdate() {
-                    try {
-                      const res = await fetch(location.href + '?' + Date.now());
-                      const text = await res.text();
-                      const newModified = res.headers.get('last-modified') || text.length;
-                      if (lastModified && lastModified !== newModified) {
-                        location.reload();
-                      }
-                      lastModified = newModified;
-                    } catch (e) {}
-                  }
-                  setInterval(checkUpdate, 2000);
-                </script></head>\`
-              )
+              content = content.replace('</head>', '<script src="/reload.js"></script></head>')
             }
             fs.writeFileSync(destHtml, content)
           }
