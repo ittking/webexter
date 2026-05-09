@@ -10,7 +10,8 @@
       "Bash(rm -rf /tmp/webexter-test)",
       "Read(//private/tmp/webexter-test/**)",
       "Bash(node -e ' *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(pnpm build:link *)"
     ]
   }
 }

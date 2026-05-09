@@ -63,7 +63,7 @@ function generatePackageJson(projectName: string, framework: Framework, language
     version: '0.0.1',
     type: 'module',
     scripts: {
-      dev: 'vite',
+      dev: 'vite build --watch',
       build: 'vite build',
       preview: 'vite preview',
     },
