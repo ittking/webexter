@@ -36,7 +36,7 @@ function generateViteConfig(
   return `import { defineConfig } from 'vite'
 import ${plugin.import} from '${plugin.package}'
 import { crx } from '@crxjs/vite-plugin'
-import manifest from './manifest.json' assert { type: 'json' }
+import manifest from './manifest.json'
 
 export default defineConfig({
   plugins: [
@@ -76,7 +76,7 @@ function generatePackageJson(projectName: string, framework: Framework, language
     },
     devDependencies: {
       vite: '^6.3.0',
-      '@crxjs/vite-plugin': '^2.0.0-beta.28',
+      '@crxjs/vite-plugin': '^2.4.0',
     },
   }
 

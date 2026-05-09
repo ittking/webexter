@@ -30,7 +30,7 @@ export function generateManifest(options: ManifestOptions): string {
     description: `${name} browser extension`,
   }
 
-  const permissions: string[] = []
+  const permissions: string[] = ['storage']
 
   if (modules.includes('popup')) {
     manifest.action = { default_popup: 'src/popup/index.html' }
@@ -71,6 +71,10 @@ export function generateManifest(options: ManifestOptions): string {
 
   if (permissions.length > 0) {
     manifest.permissions = permissions
+  }
+
+  manifest.content_security_policy = {
+    extension_pages: "script-src 'self'; object-src 'self'; connect-src 'self' ws://localhost:* http://localhost:* ws://127.0.0.1:* http://127.0.0.1:*",
   }
 
   return JSON.stringify(manifest, null, 2)
