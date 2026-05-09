@@ -53,31 +53,13 @@ export default defineConfig({
   plugins: [
     ${plugin.import}(),
     {
-      name: 'reload-extension',
-      enforce: 'post',
-      apply: 'build',
-      transformIndexHtml(html, { filename }) {
-        if (!isDev) return html
-        const moduleName = filename.split('/').slice(-2, -1)[0]
-        if (pageModules.includes(moduleName)) {
-          return html.replace(
-            '</head>',
-            \`<script>
-              if (import.meta.hot) {
-                import.meta.hot.on('vite:beforeFullReload', () => {
-                  console.log('[HMR] Reloading extension page...')
-                })
-                import.meta.hot.accept()
-              }
-            </script></head>\`
-          )
+      name: 'inject-browser-polyfill',
+      enforce: 'pre',
+      transform(code, id) {
+        if (/\\.(ts|js|tsx|jsx)$/.test(id) && !id.includes('node_modules')) {
+          return "import browser from 'webextension-polyfill';\\n" + code
         }
-        return html
-      },
-      writeBundle() {
-        if (isDev) {
-          console.log('[Dev] Build completed, extension pages should auto-refresh')
-        }
+        return code
       },
     },
     {
@@ -151,7 +133,6 @@ ${inputLines.join(',\n')}
           }
           return 'assets/[name].[ext]'
         },
-        banner: () => \`import browser from 'webextension-polyfill';globalThis.browser=browser;\`,
       },
     },
     outDir: outBase,
