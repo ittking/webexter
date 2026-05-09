@@ -1,8 +1,8 @@
 import prompts from 'prompts'
 
 export const FRAMEWORKS = [
-  { title: 'Vue', value: 'vue' },
   { title: 'React', value: 'react' },
+  { title: 'Vue', value: 'vue' },
 ] as const
 
 export const LANGUAGES = [
@@ -11,12 +11,12 @@ export const LANGUAGES = [
 ] as const
 
 export const AVAILABLE_MODULES = [
-  { title: 'Popup', value: 'popup', description: 'Browser action popup page' },
-  { title: 'New Tab Page', value: 'newtab', description: 'Override browser new tab page' },
   { title: 'Background (Service Worker)', value: 'background', description: 'Background service worker' },
   { title: 'Content Script', value: 'content', description: 'Content script injected into pages' },
+  { title: 'Popup', value: 'popup', description: 'Browser action popup page' },
   { title: 'Options Page', value: 'options', description: 'Extension options page' },
   { title: 'Side Panel', value: 'sidepanel', description: 'Browser side panel' },
+  { title: 'New Tab Page', value: 'newtab', description: 'Override browser new tab page' },
   { title: 'DevTools Page', value: 'devtools', description: 'DevTools extension panel' },
 ] as const
 

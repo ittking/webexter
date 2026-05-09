@@ -32,14 +32,6 @@ export function generateManifest(options: ManifestOptions): string {
 
   const permissions: string[] = ['storage']
 
-  if (modules.includes('popup')) {
-    manifest.action = { default_popup: 'src/popup/index.html' }
-  }
-
-  if (modules.includes('newtab')) {
-    manifest.chrome_url_overrides = { newtab: 'src/newtab/index.html' }
-  }
-
   if (modules.includes('background')) {
     manifest.background = {
       service_worker: `src/background/index${ext}`,
@@ -56,6 +48,10 @@ export function generateManifest(options: ManifestOptions): string {
     ]
   }
 
+  if (modules.includes('popup')) {
+    manifest.action = { default_popup: 'src/popup/index.html' }
+  }
+
   if (modules.includes('options')) {
     manifest.options_page = 'src/options/index.html'
   }
@@ -63,6 +59,10 @@ export function generateManifest(options: ManifestOptions): string {
   if (modules.includes('sidepanel')) {
     manifest.side_panel = { default_path: 'src/sidepanel/index.html' }
     permissions.push('sidePanel')
+  }
+
+  if (modules.includes('newtab')) {
+    manifest.chrome_url_overrides = { newtab: 'src/newtab/index.html' }
   }
 
   if (modules.includes('devtools')) {
