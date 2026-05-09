@@ -12,6 +12,7 @@ export const LANGUAGES = [
 
 export const AVAILABLE_MODULES = [
   { title: 'Popup', value: 'popup', description: 'Browser action popup page' },
+  { title: 'New Tab Page', value: 'newtab', description: 'Override browser new tab page' },
   { title: 'Background (Service Worker)', value: 'background', description: 'Background service worker' },
   { title: 'Content Script', value: 'content', description: 'Content script injected into pages' },
   { title: 'Options Page', value: 'options', description: 'Extension options page' },

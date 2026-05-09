@@ -34,6 +34,10 @@ export function generateManifest(options: ManifestOptions): string {
     manifest.action = { default_popup: 'popup/index.html' }
   }
 
+  if (modules.includes('newtab')) {
+    manifest.chrome_url_overrides = { newtab: 'newtab/index.html' }
+  }
+
   if (modules.includes('background')) {
     manifest.background = {
       service_worker: 'background/index.js',

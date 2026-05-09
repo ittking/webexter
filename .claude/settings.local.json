@@ -30,7 +30,11 @@
       "Bash(echo '<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\" /><title>Popup</title></head> *)",
       "Bash(echo 'import React from \"react\"; import ReactDOM from \"react-dom/client\" *)",
       "Bash(mkdir -p src)",
-      "Bash(mv background *)"
+      "Bash(mv background *)",
+      "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/newtab)",
+      "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/vue-ts/src/newtab)",
+      "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/react-js/src/newtab)",
+      "Bash(cp -r /Volumes/Extra/Projects/workspace/webexter/src/templates/react-ts/src/popup /Volumes/Extra/Projects/workspace/webexter/src/templates/vue-js/src/newtab)"
     ]
   }
 }

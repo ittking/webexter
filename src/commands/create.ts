@@ -40,11 +40,46 @@ import fs from 'fs'
 
 const isDev = process.env.NODE_ENV === 'development'
 const outBase = isDev ? 'dist/dev/chrome' : 'dist/build/chrome'
-const pageModules = ['popup', 'options', 'sidepanel', 'devtools']
+const pageModules = ['popup', 'newtab', 'options', 'sidepanel', 'devtools']
 
 export default defineConfig({
+  server: {
+    port: 5173,
+    hmr: {
+      port: 5173,
+      host: 'localhost',
+    },
+  },
   plugins: [
     ${plugin.import}(),
+    {
+      name: 'reload-extension',
+      enforce: 'post',
+      apply: 'build',
+      transformIndexHtml(html, { filename }) {
+        if (!isDev) return html
+        const moduleName = filename.split('/').slice(-2, -1)[0]
+        if (pageModules.includes(moduleName)) {
+          return html.replace(
+            '</head>',
+            \`<script>
+              if (import.meta.hot) {
+                import.meta.hot.on('vite:beforeFullReload', () => {
+                  console.log('[HMR] Reloading extension page...')
+                })
+                import.meta.hot.accept()
+              }
+            </script></head>\`
+          )
+        }
+        return html
+      },
+      writeBundle() {
+        if (isDev) {
+          console.log('[Dev] Build completed, extension pages should auto-refresh')
+        }
+      },
+    },
     {
       name: 'copy-assets',
       writeBundle() {
@@ -64,7 +99,28 @@ export default defineConfig({
             if (!fs.existsSync(resolve(outDir, mod))) {
               fs.mkdirSync(resolve(outDir, mod), { recursive: true })
             }
-            fs.copyFileSync(srcHtml, destHtml)
+            let content = fs.readFileSync(srcHtml, 'utf8')
+            if (isDev) {
+              content = content.replace(
+                '</head>',
+                \`<script>
+                  let lastModified = \${Date.now()};
+                  async function checkUpdate() {
+                    try {
+                      const res = await fetch(location.href + '?' + Date.now());
+                      const text = await res.text();
+                      const newModified = res.headers.get('last-modified') || text.length;
+                      if (lastModified && lastModified !== newModified) {
+                        location.reload();
+                      }
+                      lastModified = newModified;
+                    } catch (e) {}
+                  }
+                  setInterval(checkUpdate, 2000);
+                </script></head>\`
+              )
+            }
+            fs.writeFileSync(destHtml, content)
           }
         }
         if (hasSrcDir) {
@@ -74,6 +130,7 @@ export default defineConfig({
     },
   ],
   build: {
+    watch: isDev ? { include: 'src/**' } : undefined,
     rollupOptions: {
       input: {
 ${inputLines.join(',\n')}
