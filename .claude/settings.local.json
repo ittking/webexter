@@ -38,7 +38,8 @@
       "Bash(npm view *)",
       "Bash(kill 94895 *)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "WebSearch"
     ]
   }
 }

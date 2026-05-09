@@ -35,6 +35,23 @@ export default defineConfig(({ mode }) => {
         id: env.VITE_FIREFOX_ID || '${projectName}@example.com',
       },
     }
+
+    // Convert Chrome side_panel to Firefox sidebar_action
+    if ((manifest as Record<string, any>).side_panel) {
+      ;(manifest as Record<string, any>).sidebar_action = {
+        default_panel: (manifest as Record<string, any>).side_panel.default_path,
+      }
+      delete (manifest as Record<string, any>).side_panel
+    }
+
+    // Convert Chrome options_page to Firefox options_ui
+    if ((manifest as Record<string, any>).options_page) {
+      ;(manifest as Record<string, any>).options_ui = {
+        page: (manifest as Record<string, any>).options_page,
+        open_in_tab: true,
+      }
+      delete (manifest as Record<string, any>).options_page
+    }
   }
 
   const platform = mode === 'production' ? '' : mode
