@@ -8,9 +8,9 @@
     "webexter": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc && rm -rf dist/templates && cp -r src/templates dist/templates",
     "dev": "tsx src/cli.ts",
-    "prepublishOnly": "pnpm build"
+    "build": "tsc && rm -rf dist/templates && cp -r src/templates dist/templates",
+    "build:link": "pnpm build && pnpm link --global"
   },
   "keywords": ["browser-extension", "scaffold", "chrome-extension", "manifest-v3"],
   "author": "",
