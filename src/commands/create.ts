@@ -36,24 +36,79 @@ function generateViteConfig(
   return `import { defineConfig } from 'vite'
 import ${plugin.import} from '${plugin.package}'
 import { resolve } from 'path'
+import fs from 'fs'
+
+const isDev = process.env.NODE_ENV === 'development'
+const outBase = isDev ? 'dist/dev/chrome' : 'dist/build/chrome'
+const pageModules = ['popup', 'options', 'sidepanel', 'devtools']
 
 export default defineConfig({
-  plugins: [${plugin.import}()],
+  plugins: [
+    ${plugin.import}(),
+    {
+      name: 'copy-assets',
+      writeBundle() {
+        const outDir = resolve(__dirname, outBase)
+        if (fs.existsSync('manifest.json')) {
+          fs.copyFileSync('manifest.json', resolve(outDir, 'manifest.json'))
+        }
+        if (fs.existsSync('public')) {
+          copyDir('public', outDir)
+        }
+        let hasSrcDir = false
+        for (const mod of pageModules) {
+          const srcHtml = resolve(outDir, 'src', mod, 'index.html')
+          const destHtml = resolve(outDir, mod, 'index.html')
+          if (fs.existsSync(srcHtml)) {
+            hasSrcDir = true
+            if (!fs.existsSync(resolve(outDir, mod))) {
+              fs.mkdirSync(resolve(outDir, mod), { recursive: true })
+            }
+            fs.copyFileSync(srcHtml, destHtml)
+          }
+        }
+        if (hasSrcDir) {
+          fs.rmSync(resolve(outDir, 'src'), { recursive: true, force: true })
+        }
+      },
+    },
+  ],
   build: {
     rollupOptions: {
       input: {
 ${inputLines.join(',\n')}
       },
       output: {
-        entryFileNames: '[name]/index.js',
-        chunkFileNames: 'chunks/[name].js',
-        assetFileNames: '[name]/[name].[ext]',
+        entryFileNames: (chunkInfo) => {
+          if (['background', 'content'].includes(chunkInfo.name)) {
+            return '[name]/index.js'
+          }
+          return 'assets/js/[name].js'
+        },
+        chunkFileNames: 'assets/js/chunks/[name].js',
+        assetFileNames: (assetInfo) => {
+          const ext = (assetInfo.name || '').split('.').pop()
+          if (ext === 'css') return 'assets/css/[name].[ext]'
+          if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext || '')) {
+            return 'assets/images/[name].[ext]'
+          }
+          return 'assets/[name].[ext]'
+        },
       },
     },
-    outDir: 'dist',
+    outDir: outBase,
     emptyOutDir: true,
   },
 })
+
+function copyDir(src, dest) {
+  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true })
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const srcPath = resolve(src, entry.name)
+    const destPath = resolve(dest, entry.name)
+    entry.isDirectory() ? copyDir(srcPath, destPath) : fs.copyFileSync(srcPath, destPath)
+  }
+}
 `
 }
 
@@ -63,8 +118,8 @@ function generatePackageJson(projectName: string, framework: Framework, language
     version: '0.0.1',
     type: 'module',
     scripts: {
-      dev: 'vite build --watch',
-      build: 'vite build',
+      dev: 'NODE_ENV=development vite build --watch',
+      build: 'NODE_ENV=production vite build',
       preview: 'vite preview',
     },
     dependencies: {

@@ -19,8 +19,7 @@ interface ManifestV3 {
 }
 
 export function generateManifest(options: ManifestOptions): string {
-  const { name, modules, language } = options
-  const ext = `.${language}`
+  const { name, modules } = options
 
   const manifest: Record<string, unknown> = {
     manifest_version: 3,
@@ -32,12 +31,12 @@ export function generateManifest(options: ManifestOptions): string {
   const permissions: string[] = []
 
   if (modules.includes('popup')) {
-    manifest.action = { default_popup: 'src/popup/index.html' }
+    manifest.action = { default_popup: 'popup/index.html' }
   }
 
   if (modules.includes('background')) {
     manifest.background = {
-      service_worker: `src/background/index${ext}`,
+      service_worker: 'background/index.js',
       type: 'module',
     }
   }
@@ -46,22 +45,22 @@ export function generateManifest(options: ManifestOptions): string {
     manifest.content_scripts = [
       {
         matches: ['<all_urls>'],
-        js: [`src/content/index${ext}`],
+        js: ['content/index.js'],
       },
     ]
   }
 
   if (modules.includes('options')) {
-    manifest.options_page = 'src/options/index.html'
+    manifest.options_page = 'options/index.html'
   }
 
   if (modules.includes('sidepanel')) {
-    manifest.side_panel = { default_path: 'src/sidepanel/index.html' }
+    manifest.side_panel = { default_path: 'sidepanel/index.html' }
     permissions.push('sidePanel')
   }
 
   if (modules.includes('devtools')) {
-    manifest.devtools_page = 'src/devtools/index.html'
+    manifest.devtools_page = 'devtools/index.html'
   }
 
   if (permissions.length > 0) {
