@@ -26,32 +26,22 @@ function generateViteConfig(
 
   const inputLines: string[] = []
   for (const mod of modules) {
-    if (['popup', 'options', 'sidepanel', 'devtools'].includes(mod)) {
-      inputLines.push(`    ${mod}: resolve(__dirname, 'src/${mod}/index.html')`)
+    if (['popup', 'options', 'sidepanel', 'devtools', 'newtab'].includes(mod)) {
+      inputLines.push(`    ${mod}: 'src/${mod}/index.html'`)
     } else {
-      inputLines.push(`    ${mod}: resolve(__dirname, 'src/${mod}/index${ext}')`)
+      inputLines.push(`    ${mod}: 'src/${mod}/index${ext}'`)
     }
   }
 
   return `import { defineConfig } from 'vite'
 import ${plugin.import} from '${plugin.package}'
-import { resolve } from 'path'
-import fs from 'fs'
-
-const isDev = process.env.NODE_ENV === 'development'
-const outBase = isDev ? 'dist/dev/chrome' : 'dist/build/chrome'
-const pageModules = ['popup', 'newtab', 'options', 'sidepanel', 'devtools']
+import { crx } from '@crxjs/vite-plugin'
+import manifest from './manifest.json' assert { type: 'json' }
 
 export default defineConfig({
-  server: {
-    port: 5173,
-    hmr: {
-      port: 5173,
-      host: 'localhost',
-    },
-  },
   plugins: [
     ${plugin.import}(),
+    crx({ manifest }),
     {
       name: 'inject-browser-polyfill',
       enforce: 'pre',
@@ -62,79 +52,12 @@ export default defineConfig({
         return code
       },
     },
-    {
-      name: 'copy-assets',
-      writeBundle() {
-        const outDir = resolve(__dirname, outBase)
-        if (fs.existsSync('manifest.json')) {
-          fs.copyFileSync('manifest.json', resolve(outDir, 'manifest.json'))
-        }
-        if (fs.existsSync('public')) {
-          copyDir('public', outDir)
-        }
-        if (isDev) {
-          const reloadScript = "let lastCheck = Date.now();async function checkUpdate(){try{const res=await fetch(location.href+'?'+Date.now());const text=await res.text();const check=text.length;if(window.__lastCheck&&window.__lastCheck!==check)location.reload();window.__lastCheck=check}catch(e){}}setInterval(checkUpdate,2000);";
-          fs.writeFileSync(resolve(outDir, 'reload.js'), reloadScript)
-        }
-        let hasSrcDir = false
-        for (const mod of pageModules) {
-          const srcHtml = resolve(outDir, 'src', mod, 'index.html')
-          const destHtml = resolve(outDir, mod, 'index.html')
-          if (fs.existsSync(srcHtml)) {
-            hasSrcDir = true
-            if (!fs.existsSync(resolve(outDir, mod))) {
-              fs.mkdirSync(resolve(outDir, mod), { recursive: true })
-            }
-            let content = fs.readFileSync(srcHtml, 'utf8')
-            if (isDev) {
-              content = content.replace('</head>', '<script src="/reload.js"></script></head>')
-            }
-            fs.writeFileSync(destHtml, content)
-          }
-        }
-        if (hasSrcDir) {
-          fs.rmSync(resolve(outDir, 'src'), { recursive: true, force: true })
-        }
-      },
-    },
   ],
   build: {
-    watch: isDev ? { include: 'src/**' } : undefined,
-    rollupOptions: {
-      input: {
-${inputLines.join(',\n')}
-      },
-      output: {
-        entryFileNames: (chunkInfo) => {
-          if (['background', 'content'].includes(chunkInfo.name)) {
-            return '[name]/index.js'
-          }
-          return 'assets/js/[name].js'
-        },
-        chunkFileNames: 'assets/js/chunks/[name].js',
-        assetFileNames: (assetInfo) => {
-          const ext = (assetInfo.name || '').split('.').pop()
-          if (ext === 'css') return 'assets/css/[name].[ext]'
-          if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext || '')) {
-            return 'assets/images/[name].[ext]'
-          }
-          return 'assets/[name].[ext]'
-        },
-      },
-    },
-    outDir: outBase,
+    outDir: 'dist',
     emptyOutDir: true,
   },
 })
-
-function copyDir(src, dest) {
-  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true })
-  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
-    const srcPath = resolve(src, entry.name)
-    const destPath = resolve(dest, entry.name)
-    entry.isDirectory() ? copyDir(srcPath, destPath) : fs.copyFileSync(srcPath, destPath)
-  }
-}
 `
 }
 
@@ -144,8 +67,8 @@ function generatePackageJson(projectName: string, framework: Framework, language
     version: '0.0.1',
     type: 'module',
     scripts: {
-      dev: 'NODE_ENV=development vite build --watch',
-      build: 'NODE_ENV=production vite build',
+      dev: 'vite',
+      build: 'vite build',
       preview: 'vite preview',
     },
     dependencies: {
@@ -153,6 +76,7 @@ function generatePackageJson(projectName: string, framework: Framework, language
     },
     devDependencies: {
       vite: '^6.3.0',
+      '@crxjs/vite-plugin': '^2.0.0-beta.28',
     },
   }
 
@@ -160,7 +84,6 @@ function generatePackageJson(projectName: string, framework: Framework, language
     ;(pkg.dependencies as Record<string, string>)['vue'] = '^3.5.0'
     ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-vue'] = '^5.2.0'
     if (language === 'ts') {
-      ;(pkg.scripts as Record<string, string>).build = 'vue-tsc --noEmit && vite build'
       ;(pkg.devDependencies as Record<string, string>)['typescript'] = '^5.8.0'
       ;(pkg.devDependencies as Record<string, string>)['vue-tsc'] = '^2.2.0'
       ;(pkg.devDependencies as Record<string, string>)['@types/webextension-polyfill'] = '^0.12.0'
@@ -170,7 +93,6 @@ function generatePackageJson(projectName: string, framework: Framework, language
     ;(pkg.dependencies as Record<string, string>)['react-dom'] = '^19.0.0'
     ;(pkg.devDependencies as Record<string, string>)['@vitejs/plugin-react'] = '^4.4.0'
     if (language === 'ts') {
-      ;(pkg.scripts as Record<string, string>).build = 'tsc --noEmit && vite build'
       ;(pkg.devDependencies as Record<string, string>)['typescript'] = '^5.8.0'
       ;(pkg.devDependencies as Record<string, string>)['@types/react'] = '^19.0.0'
       ;(pkg.devDependencies as Record<string, string>)['@types/react-dom'] = '^19.0.0'
