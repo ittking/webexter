@@ -192,8 +192,10 @@ export async function create(projectName: string): Promise<void> {
   console.log('Next steps:')
   console.log(`  cd ${projectName}`)
   console.log('  pnpm install')
-  console.log('  pnpm dev        # development')
-  console.log('  pnpm pack       # build + zip')
-  console.log('  pnpm pack:firefox # build + zip for Firefox')
+  console.log('  pnpm dev            # development')
+  console.log('  pnpm build          # build for production')
+  console.log('  pnpm build:firefox  # build for Firefox')
+  console.log('  pnpm pack           # build + zip')
+  console.log('  pnpm pack:firefox   # build + zip for Firefox')
   console.log()
 }
