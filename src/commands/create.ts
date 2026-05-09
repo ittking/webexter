@@ -55,10 +55,11 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
-    strictPort: true,
     hmr: {
-      clientPort: 5173,
+      host: 'localhost',
+      port: 5173,
     },
+    cors: true,
   },
   build: {
     outDir: 'dist',
