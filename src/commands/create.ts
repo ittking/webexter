@@ -192,7 +192,7 @@ export async function create(projectName: string): Promise<void> {
 
   // Generate tailwind CSS entry if enabled
   if (useTailwindcss) {
-    writeFile(path.join(projectDir, 'src', 'style.css'), '@import "tailwindcss";\n')
+    writeFile(path.join(projectDir, 'src', 'style.css'), '/* @source "./"; */\n@import "tailwindcss";\n')
   }
 
   // Copy tsconfig/jsconfig from template
