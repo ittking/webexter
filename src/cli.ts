@@ -10,7 +10,7 @@
 
 import { Command } from 'commander'
 import { create } from './commands/create.js'
-import pkg from '../package.json'
+import pkg from '../package.json' with { type: 'json' }
 
 const program = new Command()
 

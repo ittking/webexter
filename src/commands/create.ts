@@ -142,6 +142,8 @@ function generatePackageJson(projectName: string, framework: Framework, language
     }
   }
 
+  ;(pkg.devDependencies as Record<string, string>)['@types/node'] = '^25.6.0'
+
   if (useTailwindcss) {
     ;(pkg.devDependencies as Record<string, string>)['@tailwindcss/vite'] = '^4.3.0'
   }
