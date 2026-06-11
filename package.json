@@ -1,6 +1,6 @@
 {
   "name": "webexter",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A scaffolding CLI for quickly building browser extensions",
   "type": "module",
   "main": "dist/cli.js",
