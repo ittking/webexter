@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-/*
- * @Author: mnwm mnwm@noreply.gitcode.com
- * @Date: 2026-05-09 14:37:39
- * @LastEditors: mnwm mnwm@noreply.gitcode.com
- * @LastEditTime: 2026-05-09 14:37:53
- * @FilePath: /webexter/src/cli.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 
 import { Command } from 'commander'
 import { create } from './commands/create.js'
@@ -16,13 +8,30 @@ const program = new Command()
 
 program
   .name('webexter')
-  .description('A scaffolding CLI for quickly building browser extensions')
+  .description(`
+A scaffolding CLI for quickly building browser extensions based on Vite 8 + Manifest V3.
+
+Supported frameworks: React 19, Vue 3
+Supported languages: TypeScript, JavaScript
+Supported browsers: Chrome, Firefox, and other Chromium-based browsers
+
+Features:
+  • Hot Module Replacement (HMR) for fast development
+  • Cross-browser extension support with WebExtension Polyfill
+  • Multiple extension modules: background, content, popup, options, sidepanel, newtab, devtools
+  • Optional Tailwind CSS v4 support
+  • TypeScript support with full type definitions
+  • Firefox-specific manifest transformations`)
   .version(pkg.version)
+  .usage(`
+Examples:
+  webexter create my-extension        Create a new extension project
+  webexter --help                     Show this help message
+  webexter create --help             Show create command options`)
 
 program
-  .command('create')
+  .command('create <name>')
   .description('Create a new browser extension project')
-  .argument('<name>', 'project name')
   .action(async (name: string) => {
     await create(name)
   })
