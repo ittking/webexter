@@ -1,76 +1,70 @@
 # webexter
 
-A scaffolding CLI for building cross-platform browser extensions with Vite 8 + Manifest V3.
+基于 Vite 8 + Manifest V3 的跨平台浏览器扩展脚手架工具。
 
-## Features
+## 功能特性
 
-- **Framework support** — React 19 or Vue 3, with TypeScript or JavaScript
-- **Modular scaffolding** — Select only the pages you need: background, content script, popup, options, side panel, new tab page, devtools
-- **Cross-platform builds** — Single `--mode` flag to build for Chrome, Firefox, or any Chromium-based browser
-- **Firefox compatibility** — Automatically handles manifest differences (`browser_specific_settings`, `sidebar_action`, `options_ui`)
-- **HMR-ready** — Hot module replacement works out of the box for extension pages
-- **Build + zip packaging** — Integrated `vite-plugin-zip-pack` for release archives
-- **WebSocket CSP** — Content Security Policy preconfigured for extension HMR connections
-- **`webextension-polyfill`** — Pre-installed for cross-browser API compatibility
+- **框架支持** — React 19 或 Vue 3，提供 TypeScript 和 JavaScript 两种语言选项
+- **模块化脚手架** — 按需选择页面：background、content script、popup、options、side panel、new tab page、devtools
+- **跨平台构建** — 通过 `--mode` 标志即可构建 Chrome、Firefox 或任意 Chromium 内核浏览器版本
+- **Firefox 兼容** — 自动处理清单文件差异（`browser_specific_settings`、`sidebar_action`、`options_ui`）
+- **热更新支持** — 扩展页面开箱即用的热模块替换
+- **WebSocket CSP** — 内容安全策略已预配置，支持扩展 HMR 连接
+- **`webextension-polyfill`** — 预装跨浏览器 API 兼容层
 
-## Quick Start
+## 快速开始
 
 ```bash
 npx webexter create my-extension
 cd my-extension
 pnpm install
-pnpm dev       # development (Chrome)
+pnpm dev       # 开发模式 (Chrome)
 ```
 
-Then load the `dist` folder as an unpacked extension in your browser.
+然后在浏览器中加载 `dist` 文件夹作为未打包扩展程序。
 
-## Usage
+## 使用方法
 
 ```bash
-webexter create <project-name>
+webexter create <项目名称>
 ```
 
-Follow the interactive prompts:
+按提示操作：
 
-1. **Framework** — React / Vue
-2. **Language** — TypeScript / JavaScript
-3. **Modules** — Multi-select the pages you need (default: popup + background)
+1. **框架** — React / Vue
+2. **语言** — TypeScript / JavaScript
+3. **模块** — 多选所需页面（默认：popup + background）
 
-### Available Modules
+### 可用模块
 
-| Module | Description | Manifest Key |
+| 模块 | 描述 | Manifest Key |
 |---|---|---|
-| Background (Service Worker) | Extension background service worker | `background.service_worker` |
-| Content Script | Script injected into web pages | `content_scripts` |
-| Popup | Browser toolbar popup | `action.default_popup` |
-| Options Page | Extension settings page | `options_page` |
-| Side Panel | Browser side panel | `side_panel` |
-| New Tab Page | Override the new tab page | `chrome_url_overrides.newtab` |
-| DevTools Page | DevTools extension panel | `devtools_page` |
+| Background (Service Worker) | 扩展后台服务 worker | `background.service_worker` |
+| Content Script | 注入到网页的脚本 | `content_scripts` |
+| Popup | 浏览器工具栏弹出窗口 | `action.default_popup` |
+| Options Page | 扩展设置页面 | `options_page` |
+| Side Panel | 浏览器侧边栏面板 | `side_panel` |
+| New Tab Page | 新标签页 | `chrome_url_overrides.newtab` |
+| DevTools Page | DevTools 扩展面板 | `devtools_page` |
 
-## Build Commands
+## 构建命令
 
-| Command | Mode | Output |
+| 命令 | 模式 | 输出 |
 |---|---|---|
-| `pnpm dev` | default | Development (Chrome) |
-| `pnpm dev:chrome` | chrome | Development (Chrome) |
-| `pnpm dev:firefox` | firefox | Development (Firefox) |
-| `pnpm build` | production | Production build |
-| `pnpm build:chrome` | chrome | Production build (Chrome) |
-| `pnpm build:firefox` | firefox | Production build (Firefox) |
-| `pnpm pack` | production | Production build + zip |
-| `pnpm pack:chrome` | chrome | Production build + zip (Chrome) |
-| `pnpm pack:firefox` | firefox | Production build + zip (Firefox) |
+| `pnpm dev` | default | 开发模式 (Chrome) |
+| `pnpm dev:chrome` | chrome | 开发模式 (Chrome) |
+| `pnpm dev:firefox` | firefox | 开发模式 (Firefox) |
+| `pnpm build` | production | 生产构建 |
+| `pnpm build:chrome` | chrome | 生产构建 (Chrome) |
+| `pnpm build:firefox` | firefox | 生产构建 (Firefox) |
 
-`pnpm dev` starts a Vite dev server with HMR. Load `dist/` as an unpacked extension in your browser.
+`pnpm dev` 启动带 HMR 的 Vite 开发服务器。在浏览器中加载 `dist/` 作为未打包扩展程序。
 
-`pnpm build` produces a production build in `dist/`.
+`pnpm build` 在 `dist/` 中生成生产构建产物。
 
-`pnpm pack` runs the build and packages `dist/` into a zip archive in `release/`.
+使用 `--mode <name>` 可针对任意 Chromium 内核浏览器（如 `--mode qq`、`--mode edge`）。只有 `firefox` 模式会触发 Firefox 特定的清单转换，其他模式均使用标准 Chrome 清单格式。
 
-Use `--mode <name>` for any Chromium-based browser (e.g. `--mode qq`, `--mode edge`). Only `firefox` mode triggers Firefox-specific manifest transforms; all other modes use standard Chrome manifest format.
-
-## Generated Project Structure
+## 生成的项目结构
 
 ```
 my-extension/
@@ -81,7 +75,7 @@ my-extension/
 ├── .env
 ├── .env.firefox
 └── src/
-    ├── env.d.ts              # (TypeScript only)
+    ├── env.d.ts              # (仅 TypeScript)
     ├── background/
     │   └── index.ts
     ├── content/
@@ -110,27 +104,27 @@ my-extension/
     └── ...
 ```
 
-Only selected modules are generated.
+仅生成所选的模块。
 
-## Firefox Compatibility
+## Firefox 兼容性
 
-When building with `--mode firefox`, the following manifest transformations are applied automatically:
+使用 `--mode firefox` 构建时，以下清单转换会自动应用：
 
-| Feature | Chrome | Firefox |
+| 功能 | Chrome | Firefox |
 |---|---|---|
-| Add-on ID | not required | `browser_specific_settings.gecko.id` |
-| Side panel | `side_panel` | `sidebar_action` |
-| Options page | `options_page` | `options_ui` (with `open_in_tab`) |
+| 插件 ID | 不需要 | `browser_specific_settings.gecko.id` |
+| 侧边栏面板 | `side_panel` | `sidebar_action` |
+| 选项页面 | `options_page` | `options_ui`（带 `open_in_tab`）|
 
-The `webextension-polyfill` package provides cross-browser API compatibility (`browser.*` API in all browsers).
+`webextension-polyfill` 包提供跨浏览器 API 兼容性（在所有浏览器中使用 `browser.*` API）。
 
-## Environment Variables
+## 环境变量
 
-| Variable | Used for |
+| 变量 | 用途 |
 |---|---|
-| `VITE_FIREFOX_ID` | Firefox add-on ID (default: `<project>@example.com`) |
+| `VITE_FIREFOX_ID` | Firefox 插件 ID（默认：`<project>@example.com`）|
 
-Define custom variables in `.env` (shared) or `.env.firefox` (Firefox only).
+在 `.env`（通用）或 `.env.firefox`（仅 Firefox）中定义自定义变量。
 
 ## License
 
