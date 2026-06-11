@@ -12,6 +12,72 @@ const PLUGINS: Record<Framework, { import: string; package: string }> = {
   react: { import: 'react', package: '@vitejs/plugin-react' },
 }
 
+function generateStore(language: Language): string {
+  if (language === 'ts') {
+    return `import { localExtStorage } from '@webext-core/storage'
+
+interface Schema {
+  count: number
+}
+
+// Example usage:
+// const count = await localExtStorage.getItem('count')
+// await localExtStorage.setItem('count', 0)
+// localExtStorage.onChange('count', (newValue, oldValue) => {
+//   console.log('Count changed from', oldValue, 'to', newValue)
+// })
+
+export {}
+`
+  }
+  return `import { localExtStorage } from '@webext-core/storage'
+
+// Example usage:
+// const count = await localExtStorage.getItem('count')
+// await localExtStorage.setItem('count', 0)
+// localExtStorage.onChange('count', (newValue, oldValue) => {
+//   console.log('Count changed from', oldValue, 'to', newValue)
+// })
+
+export {}
+`
+}
+
+function generatePolyfill(): string {
+  return `import browser from 'webextension-polyfill'
+
+globalThis.browser = browser as any
+
+export {}
+`
+}
+
+
+function injectPolyfillImport(filePath: string, isModule: string): void {
+  if (!fs.existsSync(filePath)) return
+
+  let content = fs.readFileSync(filePath, 'utf-8')
+  const polyfillImport = `import '../polyfill'\n`
+
+  // Skip if already imported
+  if (content.includes("import '../polyfill'")) return
+
+  if (isModule === 'background' || isModule === 'content') {
+    // Replace webextension-polyfill import with polyfill import
+    if (content.includes("import browser from 'webextension-polyfill'")) {
+      content = content.replace("import browser from 'webextension-polyfill'\n", polyfillImport)
+    } else {
+      // Add import at the top
+      content = polyfillImport + content
+    }
+  } else {
+    // For UI modules (popup, options, sidepanel, newtab), add import at top
+    content = polyfillImport + content
+  }
+
+  fs.writeFileSync(filePath, content)
+}
+
 function generateViteConfig(
   framework: Framework,
   projectName: string,
@@ -24,7 +90,6 @@ function generateViteConfig(
   return `import { defineConfig, loadEnv } from 'vite'
 import ${plugin.import} from '${plugin.package}'
 import { crx } from '@crxjs/vite-plugin'
-import zipPack from 'vite-plugin-zip-pack'
 import { resolve } from 'path'${tailwindImport}
 import baseManifest from './manifest.json'
 
@@ -58,11 +123,6 @@ export default defineConfig(({ mode }) => {
     }
   }
 
-  const platform = mode === 'production' ? '' : mode
-  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-  const extName = String(baseManifest.name).replace(/[^a-zA-Z0-9_-]/g, '_')
-  const zipFileName = platform ? extName + '_' + platform + '_' + baseManifest.version + '_' + date + '.zip' : extName + '_' + baseManifest.version + '_' + date + '.zip'
-
   return {
     resolve: {
       alias: {
@@ -72,11 +132,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
       ${plugin.import}(),${tailwindPlugin}
       crx({ manifest }),
-      zipPack({
-        inDir: 'dist',
-        outDir: 'release',
-        outFileName: zipFileName,
-      }),
     ],
     server: {
       port: 5173,
@@ -107,18 +162,15 @@ function generatePackageJson(projectName: string, framework: Framework, language
       build: 'vite build',
       'build:chrome': 'vite build --mode chrome',
       'build:firefox': 'vite build --mode firefox',
-      pack: 'vite build',
-      'pack:chrome': 'vite build --mode chrome',
-      'pack:firefox': 'vite build --mode firefox',
       preview: 'vite preview',
     },
     dependencies: {
       'webextension-polyfill': '^0.12.0',
+      '@webext-core/storage': '^1.2.0',
     },
     devDependencies: {
       vite: '^8.0.0',
       '@crxjs/vite-plugin': '^2.4.0',
-      'vite-plugin-zip-pack': '^1.2.4',
     },
   }
 
@@ -145,6 +197,7 @@ function generatePackageJson(projectName: string, framework: Framework, language
   ;(pkg.devDependencies as Record<string, string>)['@types/node'] = '^25.6.0'
 
   if (useTailwindcss) {
+    ;(pkg.dependencies as Record<string, string>)['tailwindcss'] = '^4.0.0'
     ;(pkg.devDependencies as Record<string, string>)['@tailwindcss/vite'] = '^4.3.0'
   }
 
@@ -195,6 +248,14 @@ export async function create(projectName: string): Promise<void> {
     writeFile(path.join(projectDir, 'src', 'style.css'), '/* @source "./"; */\n@import "tailwindcss";\n')
   }
 
+  // Generate store index
+  ensureDir(path.join(projectDir, 'src', 'store'))
+  const ext = language === 'ts' ? '.ts' : '.js'
+  writeFile(path.join(projectDir, 'src', 'store', `index${ext}`), generateStore(language))
+
+  // Generate polyfill entry
+  writeFile(path.join(projectDir, 'src', `polyfill${ext}`), generatePolyfill())
+
   // Copy tsconfig/jsconfig from template
   const templateDir = getTemplateDir()
   const templateSrc = path.join(templateDir, templateKey)
@@ -226,6 +287,15 @@ export async function create(projectName: string): Promise<void> {
     const modDir = path.join(templateSrc, 'src', mod)
     if (dirExists(modDir)) {
       copyDir(modDir, path.join(projectDir, 'src', mod))
+
+      // Inject polyfill import to module entry files
+      if (mod === 'background' || mod === 'content') {
+        const entryFile = path.join(projectDir, 'src', mod, `index${ext}`)
+        injectPolyfillImport(entryFile, mod)
+      } else if (['popup', 'options', 'sidepanel', 'newtab'].includes(mod)) {
+        const mainFile = path.join(projectDir, 'src', mod, `main${language === 'ts' ? '.tsx' : '.jsx'}`)
+        injectPolyfillImport(mainFile, mod)
+      }
     }
   }
 

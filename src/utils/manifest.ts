@@ -30,7 +30,7 @@ export function generateManifest(options: ManifestOptions): string {
     description: `${name} browser extension`,
   }
 
-  const permissions: string[] = ['storage']
+  const permissions: string[] = ['storage', 'unlimitedStorage']
 
   if (modules.includes('background')) {
     manifest.background = {
